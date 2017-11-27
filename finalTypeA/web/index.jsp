@@ -8,5 +8,6 @@
     <body>
         <c:redirect url = "DB_PersonServlet"/>
         <a href='DB_PersonServlet'>JH6_trgoodwin</a>
+        <p>A new text</p>
     </body>
 </html>
