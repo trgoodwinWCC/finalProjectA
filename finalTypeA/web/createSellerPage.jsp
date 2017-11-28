@@ -11,15 +11,16 @@
                 background-color: <c:out value="${backgroundColor}">peach</c:out>;
             }
             .login {
-                color: red;
+                background-color:lightgrey;
                 margin-right: 40px;
                 float: right;
             }
         </style>
     </head>
+    <c:set var="username" value="Test"/>
     <c:choose>
         <c:when test="${!empty username}">
-            <c:out value="${username} is logged in"></c:out>
+            <span class="login">User <span style="font-size:large;color:blue"><c:out value="${username}"></c:out></span> is logged in</span>
         </c:when>
         <c:otherwise>
             <a class="login" href="login">Login</a>
