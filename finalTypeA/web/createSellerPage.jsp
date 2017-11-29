@@ -28,6 +28,7 @@
         </c:otherwise>
     </c:choose>
     <body>
+        <h1>Add a seller page</h1>
         <form action="SellerPageServlet">
             <input type="text" name="SellerTitle"/>Add your title here.
             <br/><input type="color" name="SellerTitleColor" value="#ff0000"/>Pick a color for your title.
@@ -36,8 +37,7 @@
             <br/><input type="number" name="NumberOfProd"/>Number of your products.
             <%-- I may have to use j/s to populate the table I want.
             Or I could seperate the seller page and the product page. --%>
-            
+            <br/><input type="submit" name="action" value="Add page">
         </form>
-        <h1>Example?</h1>
     </body>
 </html>
