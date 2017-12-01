@@ -73,6 +73,21 @@ public class PasswordSave {
         } catch (NoSuchAlgorithmException | InvalidKeySpecException ex) {
             Logger.getLogger(PasswordSave.class.getName()).log(Level.SEVERE, null, ex);
         }
+        /* so it is working, use something like following and mysql blob type to send/retrive to db
+        String sql = "INSERT INTO mysql_all_table (col_binarystream) VALUES(?)";
+        PreparedStatement pstmt = connection.prepareStatement(sql);
+        //j  a  v  a  2s . co  m
+        byte[] buffer = "some data".getBytes();
+        pstmt.setBytes(1, buffer);
+        pstmt.executeUpdate();
+        pstmt.close();
+        
+        Statement stmt = connection.createStatement();
+        ResultSet resultSet = stmt.executeQuery("SELECT * FROM mysql_all_table");
+        while (resultSet.next()) {
+          byte[] bytes = resultSet.getBytes("col_binarystream");
+        }
+        */
         for(byte bit: pass) {
             System.out.println(bit);
         }
