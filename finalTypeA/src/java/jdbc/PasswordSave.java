@@ -94,10 +94,10 @@ public class PasswordSave {
         System.out.println(encrypt);
     }
     public boolean attemptLogin(String username, String passwordFromUser, Statement statement) {
-        //
+        //checks if the user exixts, if so, attempt to validate username and password.
+        //returns false if anything fails, returns true if correct
         String sql2 = "select User from accountTable where User=?";
         PreparedStatement pmt;
-        String error="";
         try {
             pmt = statement.getConnection().prepareStatement(sql2);
             pmt.setString(1, username);
@@ -118,7 +118,33 @@ public class PasswordSave {
                 Logger.getLogger(PasswordSave.class.getName()).log(Level.SEVERE, null, ex);
             }
         } catch (SQLException ex) {
-            error = ex.toString();
+            System.out.println(ex.toString());
+        }
+        return false;
+    }
+    public boolean createAccount(String username, String passwordFromUser, Statement statement) {
+        String sql2 = "select User from accountTable where User=?";
+        PreparedStatement pmt;
+        try {
+            pmt = statement.getConnection().prepareStatement(sql2);
+            pmt.setString(1, username);
+            ResultSet rs = pmt.executeQuery();
+            if (!rs.first()) {
+                return false;
+            }
+            byte[] salt = generateSalt();
+            byte[] passwordToStore = getEncryptedPassword(username, salt);
+            sql2 = "insert into accountTable values(?, ?, ?)";
+            pmt = statement.getConnection().prepareStatement(sql2);
+            pmt.setString(1, username);
+            pmt.setBytes(2, passwordToStore);
+            pmt.setBytes(3, salt);
+            pmt.executeUpdate();
+            return true;
+        } catch (SQLException ex) {
+            System.out.println(ex.toString());
+        } catch (NoSuchAlgorithmException | InvalidKeySpecException ex) {
+            Logger.getLogger(PasswordSave.class.getName()).log(Level.SEVERE, null, ex);
         }
         return false;
     }
