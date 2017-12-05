@@ -1,13 +1,16 @@
 package db_persons;
 
 import java.sql.Statement;
-import java.util.ArrayList;
 import javax.servlet.http.HttpServletRequest;
+import jdbc.PasswordSave;
 
 public class loginServlet {
     public static String update(Statement statement, HttpServletRequest request) {
         String errorMessage = "";
         String action = request.getParameter("action");
+        
+        //consider adding this page to the controller and doing if/else on the button inputs.
+        //Also figure out how to redirect to and from this part.
         
         if (action != null) {
             String sellerName = request.getParameter("SellerName");
@@ -15,24 +18,21 @@ public class loginServlet {
             String createSellerName = request.getParameter("CreateSellerName");
             String createSellerPassword = request.getParameter("CreateSellerPassword");
 
-            String strIndex;
-            int index;
-
-            
-            // important! add connection to the methods that need it for prepared statements
+            PasswordSave saving = new PasswordSave();
             switch (action) {
                 case "Login":
-                    
-                //
-                case "Clear List":
-                    errorMessage = DB_Person.remove(-1, statement);
+                    if(saving.attemptLogin(sellerName,sellerPassword,statement)) {
+                        errorMessage="Username or password is incorrect.";
+                    }
+                    break;
+                case "Create Account":
+                    if(saving.createAccount(createSellerName, createSellerPassword, statement))
+                        errorMessage="A error occured or the username is already used.";
                     break;
             }
         }
 
-        ArrayList<DB_Person> personCollection = new ArrayList<>();
-        errorMessage += DB_Person.getPeople(statement, personCollection);
-        request.setAttribute("PersonCollection", personCollection);
+        //request.setAttribute("PersonCollection", personCollection);
 
         return errorMessage;
     }
