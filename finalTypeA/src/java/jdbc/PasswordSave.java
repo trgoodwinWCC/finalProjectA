@@ -5,6 +5,10 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.KeySpec;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -14,20 +18,14 @@ import javax.crypto.spec.PBEKeySpec;
 
 public class PasswordSave {
 
-    public boolean authenticate(String attemptedPassword, byte[] encryptedPassword, byte[] salt)
-            throws NoSuchAlgorithmException, InvalidKeySpecException {
-        // Encrypt the clear-text password using the same salt that was used to
-        // encrypt the original password
+    public boolean authenticate(String attemptedPassword, byte[] encryptedPassword, byte[] salt) throws NoSuchAlgorithmException, InvalidKeySpecException {
+        // Encrypt the clear-text password using the same salt that was used to encrypt the original password
         byte[] encryptedAttemptedPassword = getEncryptedPassword(attemptedPassword, salt);
-
-        // Authentication succeeds if encrypted password that the user entered
-        // is equal to the stored hash
-        
+        // Authentication succeeds if encrypted password that the user entered  is equal to the stored hash.
         return Arrays.equals(encryptedPassword, encryptedAttemptedPassword);
     }
 
-    public byte[] getEncryptedPassword(String password, byte[] salt)
-            throws NoSuchAlgorithmException, InvalidKeySpecException {
+    public byte[] getEncryptedPassword(String password, byte[] salt) throws NoSuchAlgorithmException, InvalidKeySpecException {
         // PBKDF2 with SHA-1 as the hashing algorithm. Note that the NIST
         // specifically names SHA-1 as an acceptable hashing algorithm for PBKDF2
         String algorithm = "PBKDF2WithHmacSHA1";
@@ -39,22 +37,17 @@ public class PasswordSave {
         // iOS 4.x reportedly uses 10,000:
         // http://blog.crackpassword.com/2010/09/smartphone-forensics-cracking-blackberry-backup-passwords/
         int iterations = 20000;
-
         KeySpec spec = new PBEKeySpec(password.toCharArray(), salt, iterations, derivedKeyLength);
-
-        SecretKeyFactory f = SecretKeyFactory.getInstance(algorithm);
-
+        SecretKeyFactory f= SecretKeyFactory.getInstance(algorithm);
         return f.generateSecret(spec).getEncoded();
     }
 
     public byte[] generateSalt() throws NoSuchAlgorithmException {
         // VERY important to use SecureRandom instead of just Random
         SecureRandom random = SecureRandom.getInstance("SHA1PRNG");
-
         // Generate a 8 byte (64 bit) salt as recommended by RSA PKCS5
         byte[] salt = new byte[8];
         random.nextBytes(salt);
-
         return salt;
     }
     public static void main(String[] args) {
@@ -99,5 +92,34 @@ public class PasswordSave {
             Logger.getLogger(PasswordSave.class.getName()).log(Level.SEVERE, null, ex);
         }
         System.out.println(encrypt);
+    }
+    public boolean attemptLogin(String username, String passwordFromUser, Statement statement) {
+        //
+        String sql2 = "select User from accountTable where User=?";
+        PreparedStatement pmt;
+        String error="";
+        try {
+            pmt = statement.getConnection().prepareStatement(sql2);
+            pmt.setString(1, username);
+            ResultSet rs = pmt.executeQuery();
+            if (!rs.first()) {
+                return false;
+            }
+            sql2 = "select Password,Salt from accountTable where User=?";
+            pmt = statement.getConnection().prepareStatement(sql2);
+            pmt.setString(1, username);
+            rs = pmt.executeQuery();
+            rs.next();
+            byte[] passwordFromDB = rs.getBytes("Password");
+            byte[] salt = rs.getBytes("Salt");
+            try {
+                return authenticate(username, passwordFromDB, salt);
+            } catch (NoSuchAlgorithmException | InvalidKeySpecException ex) {
+                Logger.getLogger(PasswordSave.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        } catch (SQLException ex) {
+            error = ex.toString();
+        }
+        return false;
     }
 }

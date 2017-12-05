@@ -9,6 +9,7 @@ public class DB_PersonCollection {
     public static String update(Statement statement, HttpServletRequest request) {
         String errorMessage = "";
         String action = request.getParameter("action");
+        
         if (action != null) {
             String name = request.getParameter("Name");
             String eyeColor = request.getParameter("EyeColor");
@@ -23,6 +24,9 @@ public class DB_PersonCollection {
             
             // important! add connection to the methods that need it for prepared statements
             switch (action) {
+                case "login":
+                    
+                //
                 case "Clear List":
                     errorMessage = DB_Person.remove(-1, statement);
                     break;
